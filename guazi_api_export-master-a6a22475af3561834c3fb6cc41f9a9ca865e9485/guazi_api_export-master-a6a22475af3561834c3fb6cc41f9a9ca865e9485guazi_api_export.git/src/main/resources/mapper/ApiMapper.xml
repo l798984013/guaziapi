@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mianze.apiexport.mapper.ApiMapper">
+
+
+
+  <select id="getChannelExports" resultType="com.mianze.apiexport.pojo.ChannelExport">
+    SELECT id,delay,accept_all FROM channel_export WHERE is_delete = 0
+  </select>
+
+    <select id="getChannelExport" resultType="com.mianze.apiexport.pojo.ChannelExport">
+        SELECT
+        id,accept_all,min_amount,max_amount,is_delete,is_restrict_amount,restrict_amount,is_restrict_time,begin_time,end_time,discountedState,unsupportChannel
+        FROM channel_export WHERE id = #{id}
+    </select>
+
+    <!--************************新接口***********************************-->
+    <select id="findExportChannel" resultType="com.alibaba.fastjson.JSONObject">
+        select * from api_export_channel where id=#{id}
+    </select>
+
+
+    <select id="findGuaziCity" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT areaName,areaCode FROM  api_miaodan_code where cityName=#{location}
+    </select>
+    <!--添加导出结果-->
+    <insert id="addExportResult">
+        INSERT INTO guaziresult (
+        status,
+        order_no,
+        code,
+        msg,
+        create_time,
+        `data`,
+        orderData,
+        phone,
+        exportChannel,
+        importChannel
+        )
+        VALUES
+        (
+        #{status},
+        #{order_no},
+        #{code},
+        #{msg},
+        now(),
+        #{data},
+        #{orderData},
+        #{phone},
+        #{exportChannel},
+        #{importChannel}
+        )
+    </insert>
+
+
+    <select id="findPhone" resultType="String">
+        select phone from guaziresult where data=#{id}
+    </select>
+    <select id="daJinDaiCity" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT city,city_code FROM  all_city_djd WHERE city LIKE '%${location}%'  LIMIT 1
+    </select>
+    <select id="zhanYeWangCity" resultType="Integer">
+        SELECT count(0) FROM  all_city_zyw WHERE city LIKE '%${location}%'  AND  is_delete='0' LIMIT 1
+    </select>
+    <select id="suyiwangluoCity" resultType="Integer">
+        SELECT count(0) FROM  all_city_sywl WHERE city LIKE '%${location}%'  AND  is_delete='0' LIMIT 1
+    </select>
+    <select id="findExistenceOrder" resultType="String">
+        SELECT phone FROM  guaziresult where order_no=#{orderNo} AND  status='0' LIMIT 1
+    </select>
+    <update id="updateBackStatus" >
+        UPDATE guaziresult SET grabOrder=#{grabOrder},grabOrderTime=now() ,grabOrderPrice=#{grabOrderPrice} where order_no=#{orderNo} AND status='0'
+    </update>
+    <!--退单时先查看有没有这个订单，这个订单未被抢-->
+    <select id="findExistenceOrder1" resultType="Integer">
+        SELECT count(0) FROM  guaziresult where order_no=#{orderNo} AND  status='0' AND grabOrder='1' LIMIT 1
+    </select>
+    <!--大金贷退单-->
+    <update id="updateChargeback" >
+        UPDATE guaziresult SET chargeback=#{chargeback},chargebackPrice=#{chargebackPrice},chargebackTime=now()  where order_no=#{orderNo} AND status='0' AND grabOrder='1'
+    </update>
+    <select id="queryLoanAmount" resultType="Integer">
+        SELECT amount FROM api_export_amount
+    </select>
+</mapper>

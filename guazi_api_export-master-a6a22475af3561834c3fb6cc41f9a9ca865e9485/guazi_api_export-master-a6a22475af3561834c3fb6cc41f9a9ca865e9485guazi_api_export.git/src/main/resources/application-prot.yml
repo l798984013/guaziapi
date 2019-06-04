@@ -1,0 +1,23 @@
+server:
+    port: 8080
+spring:
+    jmx:
+      enabled: false
+    datasource:
+      url: jdbc:mysql://rm-bp1769ud8w3be7fdcao.mysql.rds.aliyuncs.com:3306/guazi?useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true
+      username: yuzedb
+      password: YUZE@2019
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      type: com.alibaba.druid.pool.DruidDataSource
+
+    redis:
+      host: localhost
+      port: 6379
+      database: 6
+      timeout: 5000
+      password:
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.mianze.apiexport.pojo
+  configuration:
+    map-underscore-to-camel-case: true
